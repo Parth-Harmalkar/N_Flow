@@ -1,21 +1,46 @@
 @import "tailwindcss";
 
 :root {
-  --background: #050505;
-  --foreground: #ffffff;
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --neon-blue: #00d2ff;
-  --neon-purple: #925cff;
+  /* Fluid Base (Crextio-inspired Pearl) */
+  --background: #FDFCF8;
+  --foreground: #1E1B4B; /* Deep Navy */
+
+  /* Surface / Panels */
+  --surface: #FFFFFF;
+  --surface-foreground: #1E1B4B;
+  --surface-border: rgba(30, 27, 75, 0.03); /* Vapor-thin borders */
+
+  /* Signal Accents (Vibrant & Premium) */
+  --brand-primary: #1E1B4B;
+  --brand-accent: #F59E0B;   /* Amber Gold (from Crextio) */
+  --brand-highlight: #7C3AED; /* Royal Purple */
+
+  /* Fluid Shadows (Diffused XL) */
+  --shadow-soft-xl: 0 35px 60px -15px rgba(30, 27, 75, 0.08);
+  --shadow-inner-glow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+
+  /* Bento shell (light gutters like reference, brand-aligned) */
+  --bento-canvas: #f3f1eb;
+  --bento-tray: #e8e5de;
+  --bento-frame: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-glass: var(--glass-bg);
-  --color-glass-border: var(--glass-border);
-  --color-neon-blue: var(--neon-blue);
-  --color-neon-purple: var(--neon-purple);
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-highlight: var(--brand-highlight);
+  --color-surface-border: var(--surface-border);
+  --radius-premium: 2.5rem; /* 40px */
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
 }
 
 body {
@@ -23,15 +48,37 @@ body {
   color: var(--foreground);
   min-height: 100vh;
   overflow-x: hidden;
+  letter-spacing: -0.015em;
+  font-feature-settings: "cv02", "cv03", "cv04", "ss01";
 }
 
-.glass-morphism {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid var(--glass-border);
+.fluid-card {
+  background: var(--surface);
+  box-shadow: var(--shadow-soft-xl);
+  border-radius: var(--radius-premium);
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  border: 1px solid var(--surface-border);
 }
 
-.neumorphism-shadow {
-  box-shadow: 20px 20px 60px #040404, -20px -20px 60px #060606;
+.fluid-card:hover {
+  box-shadow: 0 45px 75px -15px rgba(30, 27, 75, 0.12);
+}
+
+/* Custom Scrollbar for Premium Feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(30, 27, 75, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(30, 27, 75, 0.2);
 }
