@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Plus, Search, Filter, CheckCircle2, Clock, ListTodo, Calendar, MoreVertical, LayoutGrid, List } from "lucide-react";
-import { getTasks } from "../actions/tasks";
+import { getTasks, deleteTask, updateTaskStatus } from "../actions/tasks";
 import { CreateTaskModal } from "@/components/admin/CreateTaskModal";
 import { Container } from "@/components/ui/Container";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { Trash2, Plus, Search, Filter, CheckCircle2, Clock, ListTodo, Calendar, MoreVertical, LayoutGrid, List } from "lucide-react";
 
 const priorityBadge: Record<string, string> = {
   low: "badge-cyan",
@@ -25,6 +25,25 @@ export default function AdminTasksPage() {
   const fetchTasks = async () => {
     setLoading(true);
     try { setTasks(await getTasks()); } catch (e) { console.error(e); } finally { setLoading(false); }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to decommission this task?")) return;
+    try {
+      await deleteTask(id);
+      fetchTasks();
+    } catch (e) {
+      alert("Failed to decommission task");
+    }
+  };
+
+  const handleStatusChange = async (taskId: string, status: string) => {
+    try {
+      await updateTaskStatus(taskId, status);
+      fetchTasks();
+    } catch (err) {
+      alert("Failed to update status");
+    }
   };
 
   useEffect(() => { fetchTasks(); }, []);
@@ -127,14 +146,34 @@ export default function AdminTasksPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: Math.min(index * 0.04, 0.4) }}
             >
-              <div className="dark-card flex h-full flex-col p-8">
+              <div className="dark-card flex h-full flex-col p-8 transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)]">
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <span className={cn("badge", priorityBadge[task.priority] || "badge-slate")}>
                     {String(task.priority || "medium").toUpperCase()}
                   </span>
-                  <button type="button" className="rounded-lg p-1.5 text-[var(--foreground-subtle)] hover:bg-[var(--surface-2)] transition-colors" aria-label="More">
-                    <MoreVertical className="h-4 w-4" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    {task.status !== "completed" && (
+                      <button 
+                        type="button" 
+                        onClick={() => handleStatusChange(task.id, "completed")}
+                        className="rounded-lg p-1.5 text-green-500/50 hover:bg-green-500/10 hover:text-green-500 transition-all"
+                        title="Mark Completed"
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                      </button>
+                    )}
+                    <button 
+                      type="button" 
+                      onClick={() => handleDelete(task.id)}
+                      className="rounded-lg p-1.5 text-red-500/50 hover:bg-red-500/10 hover:text-red-500 transition-all"
+                      title="Decommission Task"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                    <button type="button" className="rounded-lg p-1.5 text-[var(--foreground-subtle)] hover:bg-[var(--surface-2)] transition-colors" aria-label="More">
+                      <MoreVertical className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
 
                 <h3 className="font-bold leading-tight text-[var(--foreground)]">{task.title}</h3>

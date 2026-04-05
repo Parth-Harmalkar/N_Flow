@@ -4,11 +4,11 @@ import { createClient } from '@/utils/supabase/server'
 import { getEmployeeDetailMetrics } from '@/lib/analytics'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-// Initialize Gemini outside the function for performance
+// Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || "")
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
 export async function generatePerformanceSummary(userId: string) {
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
   const supabase = await createClient()
 
   // 1. Verify Admin status

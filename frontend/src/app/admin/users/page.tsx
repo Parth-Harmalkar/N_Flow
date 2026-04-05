@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, UserPlus, Search, Filter, Shield, Briefcase, Mail, Key, MoreVertical, ShieldCheck } from "lucide-react";
+import { Users, UserPlus, Search, Filter, Shield, Briefcase, Mail, Key, MoreVertical, ShieldCheck, UserCog } from "lucide-react";
+import Link from "next/link";
+
 import { getPersonnel } from "../actions/users";
 import { CreateUserModal } from "@/components/admin/CreateUserModal";
 import { Container } from "@/components/ui/Container";
@@ -29,10 +31,11 @@ export default function UsersPage() {
 
   const filtered = personnel.filter(
     (p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.employee_id.toLowerCase().includes(searchQuery.toLowerCase())
+      (p?.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (p?.email?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (p?.employee_id?.toLowerCase() || "").includes(searchQuery.toLowerCase())
   );
+
 
   const statCards = [
     { label: "Total registry", value: personnel.length, icon: Users, color: "text-[var(--brand-secondary)]" },
@@ -115,7 +118,7 @@ export default function UsersPage() {
               <div className="dark-card flex h-full flex-col p-5">
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-primary-dim)] border border-[rgba(99,102,241,0.2)] text-lg font-black italic text-[var(--brand-accent)]">
-                    {person.name[0]}
+                    {person?.name?.[0] || "?"}
                   </div>
                   <div className="flex gap-1">
                     <button type="button" className="rounded-lg p-1.5 text-[var(--foreground-subtle)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)] transition-colors" aria-label="Credentials">
@@ -142,6 +145,13 @@ export default function UsersPage() {
                     <Shield className="h-3 w-3" />
                     {person.role}
                   </span>
+                </div>
+                
+                <div className="mt-auto pt-5">
+                  <Link href={`/admin/employees/${person.id}`} className="btn-ghost w-full justify-center group/btn">
+                    <UserCog className="h-4 w-4 text-[var(--brand-primary)] group-hover/btn:scale-110 transition-transform" />
+                    Manage Profile
+                  </Link>
                 </div>
               </div>
             </motion.div>

@@ -48,6 +48,90 @@ export async function createUser(formData: {
   return { success: true }
 }
 
+export async function deleteUser(userId: string) {
+  const supabase = await createClient()
+  
+  // 1. Verify Admin
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') throw new Error('Unauthorized')
+
+  const adminClient = createAdminClient()
+  
+  // 2. Delete Auth User first (cascades to profile)
+  const { error } = await adminClient.auth.admin.deleteUser(userId)
+  if (error) throw error
+
+  revalidatePath('/admin/users')
+  revalidatePath('/admin/dashboard')
+  return { success: true }
+}
+
+export async function resetUserPassword(userId: string, newPass: string) {
+  const supabase = await createClient()
+  
+  // 1. Verify Admin
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') throw new Error('Unauthorized')
+
+  const adminClient = createAdminClient()
+  
+  // 2. Update Password via Admin SDK
+  const { error } = await adminClient.auth.admin.updateUserById(userId, {
+    password: newPass
+  })
+  if (error) throw error
+
+  return { success: true }
+}
+
+export async function updateUser(userId: string, data: {
+  name?: string;
+  email?: string;
+  employee_id?: string;
+  role?: 'admin' | 'employee';
+}) {
+  const supabase = await createClient()
+  
+  // 1. Verify Admin
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  if (profile?.role !== 'admin') throw new Error('Unauthorized')
+
+  const adminClient = createAdminClient()
+  
+  // 2. Update Auth (Email) if provided
+  if (data.email) {
+    const { error: authError } = await adminClient.auth.admin.updateUserById(userId, {
+      email: data.email
+    })
+    if (authError) throw authError
+  }
+
+  // 3. Update Profile (Name, Employee ID, Role)
+  const updateData: any = {}
+  if (data.name) updateData.name = data.name
+  if (data.employee_id) updateData.employee_id = data.employee_id
+  if (data.role) updateData.role = data.role
+
+  if (Object.keys(updateData).length > 0) {
+    const { error: profileError } = await adminClient
+      .from('profiles')
+      .update(updateData)
+      .eq('id', userId)
+    
+    if (profileError) throw profileError
+  }
+
+  revalidatePath('/admin/users')
+  revalidatePath(`/admin/employees/${userId}`)
+  return { success: true }
+}
+
 export async function getPersonnel() {
   const supabase = await createClient()
   const { data, error } = await supabase

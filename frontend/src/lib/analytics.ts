@@ -1,6 +1,8 @@
 import { createClient } from '@/utils/supabase/server'
 
 export interface PerformanceMetric {
+  userId: string
+  employeeId: string
   name: string
   hours: number
   tasks: number
@@ -14,7 +16,7 @@ export async function getGlobalPerformanceMetrics() {
   // 1. Fetch all profiles
   const { data: profiles, error: profileError } = await supabase
     .from('profiles')
-    .select('id, name')
+    .select('id, name, employee_id')
     .eq('role', 'employee')
 
   if (profileError) throw profileError
@@ -26,7 +28,7 @@ export async function getGlobalPerformanceMetrics() {
   const { data: logs, error: logError } = await supabase
     .from('logs')
     .select('user_id, start_time, end_time, created_at')
-    .gte('start_time', thirtyDaysAgo.toISOString())
+    .order('created_at', { ascending: false })
 
   if (logError) throw logError
 
@@ -59,6 +61,8 @@ export async function getGlobalPerformanceMetrics() {
     }).length
 
     return {
+      userId: p.id,
+      employeeId: p.employee_id || 'N/A',
       name: p.name,
       hours: Math.round(totalHours * 10) / 10,
       tasks: userTasks.length,

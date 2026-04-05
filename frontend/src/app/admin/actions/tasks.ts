@@ -29,6 +29,9 @@ export async function createTask(data: {
   }
 
   revalidatePath("/admin/tasks");
+  revalidatePath("/admin/analytics");
+  revalidatePath("/admin/employees/[id]", "page");
+  revalidatePath("/employee/dashboard");
   return { success: true };
 }
 
@@ -39,7 +42,7 @@ export async function deleteTask(taskId: string) {
 
   if (error) {
     console.error("Error deleting task:", error);
-    return { error: error.message };
+    throw new Error(error.message);
   }
 
   revalidatePath("/admin/tasks");
@@ -60,6 +63,9 @@ export async function updateTaskStatus(taskId: string, status: string) {
   }
 
   revalidatePath("/admin/tasks");
+  revalidatePath("/admin/analytics");
+  revalidatePath("/admin/employees/[id]", "page");
+  revalidatePath("/employee/dashboard");
   return { success: true };
 }
 
@@ -68,7 +74,7 @@ export async function getEmployees() {
 
   const { data: employees, error } = await supabase
     .from("profiles")
-    .select("id, name")
+    .select("id, name, employee_id")
     .eq("role", "employee");
 
   if (error) {

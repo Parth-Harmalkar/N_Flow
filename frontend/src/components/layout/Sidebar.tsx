@@ -12,8 +12,9 @@ import {
   BarChart3,
   LogOut,
   Clock,
+  Calendar,
   History,
-  AlertCircle,
+  Video,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
@@ -25,17 +26,20 @@ interface SidebarProps {
 
 const adminLinks = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+  { name: 'Strategic Briefings', href: '/admin/meetings', icon: Video },
   { name: 'Tasks', href: '/admin/tasks', icon: CheckSquare },
   { name: 'Personnel', href: '/admin/users', icon: Users },
   { name: 'Logs', href: '/admin/logs', icon: ClipboardList },
-  { name: 'Risks', href: '/admin/risks', icon: AlertCircle },
-  { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+  { name: 'Attendance', href: '/admin/attendance', icon: Calendar },
+  { name: 'Leaves', href: '/admin/leaves', icon: ClipboardList },
 ];
 
 const employeeLinks = [
   { name: 'Dashboard', href: '/employee/dashboard', icon: LayoutDashboard },
   { name: 'My Tasks', href: '/employee/tasks', icon: Clock },
   { name: 'Submit Log', href: '/employee/logs', icon: History },
+  { name: 'Attendance', href: '/employee/attendance', icon: Calendar },
+  { name: 'Request Leave', href: '/employee/leaves', icon: ClipboardList },
 ];
 
 const Sidebar = ({ role }: SidebarProps) => {

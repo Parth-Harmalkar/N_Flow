@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Key, Mail, Loader2, ArrowRight, AlertCircle } from "lucide-react";
+import { Key, Mail, Loader2, ArrowRight, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { login } from "../auth/actions/login";
 import { motion } from "framer-motion";
 
@@ -10,15 +10,21 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      await login({ email, password });
+      const result = await login({ email, password });
+      
+      // Fixed: Server Action returns an object with an error message
+      if (result && 'error' in result) {
+        setError(result.error || "Authentication failed. Please verify your credentials.");
+      }
     } catch (err: any) {
-      setError(err.message || "Invalid credentials");
+      setError(err.message || "An unexpected system error occurred.");
     } finally {
       setLoading(false);
     }
@@ -71,12 +77,11 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Bottom stats */}
+            {/* Bottom stats - Cleaned up */}
             <div className="relative z-10 mt-12 flex items-center gap-6 border-t border-[var(--surface-border)] pt-8">
               {[
-                { label: "Uptime", value: "99.9%" },
-                { label: "Encryption", value: "AES-256" },
-                { label: "Version", value: "v2.0.4" },
+                { label: "Revision", value: "v2.1.0" },
+                { label: "Protocol", value: "Verified" }
               ].map((s) => (
                 <div key={s.label}>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--foreground-subtle)]">{s.label}</p>
@@ -119,12 +124,23 @@ export default function LoginPage() {
                   <Key className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-subtle)]" />
                   <input
                     required
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    className="dark-input w-full py-3 pl-10 pr-4 text-sm"
+                    className="dark-input w-full py-3 pl-10 pr-12 text-sm"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--foreground-subtle)] hover:text-[var(--foreground)] transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
                 </div>
               </div>
 

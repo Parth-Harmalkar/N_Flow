@@ -2,9 +2,16 @@ import React from "react";
 import { Container } from "@/components/ui/Container";
 import { getEmployeeDetailMetrics } from "@/lib/analytics";
 import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
 import { EmployeeAnalysis } from "@/components/admin/EmployeeAnalysis";
-import { Briefcase, Clock, Calendar, CheckCircle2, AlertTriangle, FileText } from "lucide-react";
+import { LogAuditTrail } from "@/components/admin/LogAuditTrail";
+import { PersonalPerformanceChart } from "@/components/analytics/PersonalPerformanceChart";
+import { PersonnelActions } from "@/components/admin/PersonnelActions";
+import { TaskItemActions } from "@/components/admin/TaskItemActions";
+import { Briefcase, Clock, Calendar, CheckCircle2, AlertTriangle, FileText, Zap, TrendingUp, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: { id: string };
@@ -13,13 +20,18 @@ interface Props {
 export default async function EmployeeDetailPage({ params }: any) {
   const { id } = await params;
   const supabase = await createClient();
+  const adminClient = createAdminClient();
 
-  // 1. Fetch Profile
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", id)
-    .single();
+  // 1. Fetch Profile and Auth User
+  const [
+    { data: profile },
+    authResponse
+  ] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", id).single(),
+    adminClient.auth.admin.getUserById(id)
+  ]);
+
+  const authUser = authResponse?.data?.user;
 
   if (!profile) {
     return (
@@ -41,6 +53,24 @@ export default async function EmployeeDetailPage({ params }: any) {
 
   const completedTasks = tasks.filter((t) => t.status === "completed").length;
   const pendingTasks = tasks.filter((t) => t.status !== "completed").length;
+
+  // 4. Calculate 7-day trend
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    const dateStr = d.toISOString().split('T')[0];
+    const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+    
+    const dayHours = logs
+      .filter(l => l.created_at.startsWith(dateStr))
+      .reduce((acc, l) => {
+        const s = new Date(l.start_time).getTime();
+        const e = new Date(l.end_time).getTime();
+        return acc + (e - s) / (1000 * 60 * 60);
+      }, 0);
+
+    return { date: dayName, hours: Math.round(dayHours * 10) / 10 };
+  });
 
   return (
     <Container 
@@ -71,6 +101,22 @@ export default async function EmployeeDetailPage({ params }: any) {
             ))}
           </div>
 
+          {/* Performance Chart */}
+          <div className="dark-card overflow-hidden">
+             <div className="flex items-center justify-between border-b border-[var(--surface-border)] bg-[var(--surface-2)] p-4">
+                <div className="flex items-center gap-2.5">
+                   <TrendingUp className="h-4 w-4 text-[var(--brand-primary)]" />
+                   <h4 className="text-sm font-bold text-[var(--foreground)] tracking-tight">Execution Velocity (7D)</h4>
+                </div>
+                <div className="flex items-center gap-2">
+                   <span className="badge badge-green text-[9px]">+12% vs last week</span>
+                </div>
+             </div>
+             <div className="p-6">
+                <PersonalPerformanceChart data={last7Days} />
+             </div>
+          </div>
+
           {/* AI Analysis Component */}
           <EmployeeAnalysis userId={id} />
 
@@ -79,43 +125,19 @@ export default async function EmployeeDetailPage({ params }: any) {
             <div className="border-b border-[var(--surface-border)] bg-[var(--surface-2)] px-6 py-4">
               <h4 className="text-xs font-bold uppercase tracking-widest text-[var(--foreground-muted)]">Verification Audit Log</h4>
             </div>
-            <div className="divide-y divide-[var(--surface-border)]">
-              {logs.length === 0 ? (
-                <div className="py-12 text-center text-sm text-[var(--foreground-muted)]">
-                  <FileText className="mx-auto mb-3 h-8 w-8 opacity-20" />
-                  No work logs submitted for this cycle.
-                </div>
-              ) : (
-                logs.slice(0, 10).map((log) => (
-                  <div key={log.id} className="group p-6 transition-colors hover:bg-[var(--surface-2)]">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-bold text-[var(--foreground)] leading-tight">{log.description}</p>
-                        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[var(--foreground-muted)]">
-                          <span className="flex items-center gap-1.5 font-mono">
-                            <Clock className="h-3 w-3" />
-                            {new Date(log.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} — {new Date(log.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                          <span className="flex items-center gap-1.5">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(log.start_time).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex shrink-0 items-center">
-                        {log.is_duplicate && (
-                          <span className="badge badge-red flex items-center gap-1.5 py-1 px-3">
-                            <AlertTriangle className="h-3 w-3" /> HIGH RISK
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+            <LogAuditTrail logs={logs} />
           </div>
+
+          {/* Admin Tools: Danger Zone */}
+          <PersonnelActions 
+            userId={id} 
+            userName={profile.name} 
+            userEmail={authUser?.email || ""}
+            userEmployeeId={profile.employee_id || "N/A"}
+            userRole={profile.role}
+          />
         </div>
+
 
         {/* Right Column: Active Assignments */}
         <div className="lg:col-span-4">
@@ -133,23 +155,29 @@ export default async function EmployeeDetailPage({ params }: any) {
                 </div>
               ) : (
                 tasks.map((task) => (
-                  <div key={task.id} className="relative rounded-xl border border-[var(--surface-border)] bg-[var(--surface-2)] p-4 transition-all hover:border-[var(--brand-primary-dim)]">
+                  <div key={task.id} className="group relative rounded-xl border border-[var(--surface-border)] bg-[var(--surface-2)] p-4 transition-all hover:border-[var(--brand-primary-dim)] hover:bg-[var(--surface-3)]">
                     <div className="flex items-start justify-between gap-2">
                        <h5 className="text-sm font-bold text-[var(--foreground)]">{task.title}</h5>
-                       <span className={cn(
-                         "h-2 w-2 rounded-full shrink-0 mt-1.5",
-                         task.priority === 'urgent' ? 'bg-red-500' : task.priority === 'high' ? 'bg-orange-500' : 'bg-blue-500'
-                       )} />
+                       <div className="flex items-center gap-2">
+                         <div className="opacity-0 transition-opacity group-hover:opacity-100">
+                           <TaskItemActions taskId={task.id} status={task.status} />
+                         </div>
+                         <span className={cn(
+                           "h-2.5 w-2.5 rounded-full shrink-0 flex-none",
+                           task.priority === 'urgent' ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]' : 
+                           task.priority === 'high' ? 'bg-orange-400' : 'bg-blue-400'
+                         )} />
+                       </div>
                     </div>
                     <div className="mt-3 flex items-center justify-between">
                       <span className={cn(
-                        "badge text-[9px] py-0.5",
+                        "badge text-[9px] py-0.5 font-bold tracking-tight",
                         task.status === 'completed' ? 'badge-green' : 'badge-violet'
                       )}>
                         {task.status.replace('_', ' ').toUpperCase()}
                       </span>
-                      <span className="text-[10px] text-[var(--foreground-muted)]">
-                        Due {new Date(task.deadline).toLocaleDateString()}
+                      <span className="text-[10px] text-[var(--foreground-muted)] flex items-center gap-1">
+                        <Calendar className="h-3 w-3" /> {new Date(task.deadline).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                       </span>
                     </div>
                   </div>
@@ -162,3 +190,4 @@ export default async function EmployeeDetailPage({ params }: any) {
     </Container>
   );
 }
+
