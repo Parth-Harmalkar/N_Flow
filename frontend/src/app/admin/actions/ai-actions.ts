@@ -2,11 +2,11 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { getEmployeeDetailMetrics } from '@/lib/analytics'
-import OpenAI from 'openai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
+// Initialize Gemini outside the function for performance
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY || "")
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
 export async function generatePerformanceSummary(userId: string) {
   const supabase = await createClient()
@@ -42,18 +42,9 @@ export async function generatePerformanceSummary(userId: string) {
     }))
   }
 
-  // 4. Generate Summary with OpenAI
+  // 4. Generate Summary with Google Gemini
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "You are an AI Performance Auditor for N-Flow, a high-productivity firm. Your tone is professional, analytical, and objective. Provide a performance summary based on factual logs."
-        },
-        {
-          role: "user",
-          content: `Analyze the following activity logs and assigned tasks for this employee. Generate a structured performance summary in Markdown format.
+    const prompt = `Analyze the following activity logs and assigned tasks for this employee. Generate a structured performance summary in Markdown format.
 
 Context Data:
 ${JSON.stringify(context, null, 2)}
@@ -63,19 +54,25 @@ Requirements:
 2. Highlight 'Key Achievements' based on completed tasks.
 3. Identify 'Risk Factors' (e.g., duplicate proof, low hours, pending urgent tasks).
 4. Suggest 'Actionable Recommendations'.
-5. Use clean Markdown headers and bullet points.`
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 1000
-    })
+5. Use clean Markdown headers and bullet points.
+6. Tone: Professional, analytical, objective. You are an AI Performance Auditor for N-Flow.`
+
+    const result = await model.generateContent(prompt)
+    const response = result.response
+    const text = response.text()
+
+    if (!text) {
+      throw new Error('Gemini returned an empty response.')
+    }
 
     return { 
-      summary: response.choices[0].message.content,
-      tokensUsed: response.usage?.total_tokens 
+      summary: text,
+      // Gemini doesn't return tokens the same way OpenAI does in this simple call, 
+      // but we'll leave the interface consistent if possible or just omit.
+      tokensUsed: 0 
     }
   } catch (error: any) {
-    console.error('OpenAI Error:', error)
-    return { error: 'Failed to generate AI summary. Ensure OpenAI API key is configured correctly.' }
+    console.error('Gemini AI Error:', error)
+    return { error: 'Failed to generate AI summary. Ensure GOOGLE_GEMINI_API_KEY is configured correctly and Gemini API is accessible.' }
   }
 }
