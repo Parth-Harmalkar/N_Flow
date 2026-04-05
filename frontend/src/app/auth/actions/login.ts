@@ -3,9 +3,17 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 
-export async function login(formData: FormData) {
-  const email = formData.get('email') as string
-  const password = formData.get('password') as string
+export async function login(input: FormData | { email: string; password: string }) {
+  let email: string;
+  let password: string;
+
+  if (input instanceof FormData) {
+    email = input.get('email') as string;
+    password = input.get('password') as string;
+  } else {
+    email = input.email;
+    password = input.password;
+  }
   
   const supabase = await createClient()
 

@@ -31,18 +31,23 @@ export const Panel = ({
   };
 
   const content = (
-    <div className={cn(
-      "fluid-card flex min-h-0 flex-col",
-      !noPadding && "p-6 md:p-8 lg:p-10",
-      variants[variant],
-      "overflow-hidden",
-      className
-    )}>
+    <div
+      className={cn(
+        "fluid-card flex min-h-0 w-full min-w-0 max-w-full flex-col rounded-[var(--radius-premium)]",
+        !noPadding && "px-6 py-7 md:px-7 md:py-8",
+        variants[variant],
+        "overflow-hidden",
+        className
+      )}
+    >
       {children}
     </div>
   );
 
-  const wrapClass = cn("min-h-0", gridClassName);
+  const wrapClass = cn(
+    "relative isolate min-h-0 min-w-0 w-full max-w-full",
+    gridClassName
+  );
 
   if (!animate) {
     return <div className={wrapClass}>{content}</div>;

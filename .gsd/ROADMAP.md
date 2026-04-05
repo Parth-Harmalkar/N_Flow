@@ -20,13 +20,13 @@
 **Requirements**: REQ-01, REQ-02, REQ-14, REQ-15
 
 ### Phase 2: Core Task & Log Management
-**Status**: ⬜ Not Started
+**Status**: ✅ Complete
 **Objective**: CRUD for Tasks and Logs with Storage integration.
 **Requirements**: REQ-03, REQ-04, REQ-05, REQ-06
 
 ### Phase 3: Risk & Duplicate Detection Logic
-**Status**: ⬜ Not Started
-**Objective**: Implement overlapping entries, excessive duration, and file hashing.
+**Status**: ✅ Complete
+**Objective**: Duplicate proof detection via hashing and anomaly scoring (overlaps).
 **Requirements**: REQ-10, REQ-11, REQ-12
 
 ### Phase 4: Analytics & AI Integration

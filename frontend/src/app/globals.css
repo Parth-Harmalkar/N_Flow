@@ -15,14 +15,17 @@
   --brand-accent: #F59E0B;   /* Amber Gold (from Crextio) */
   --brand-highlight: #7C3AED; /* Royal Purple */
 
-  /* Fluid Shadows (Diffused XL) */
-  --shadow-soft-xl: 0 35px 60px -15px rgba(30, 27, 75, 0.08);
+  /* Depth: layered shadow (ambient + contact) */
+  --shadow-soft-xl: 0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 22px 50px -18px rgba(30, 27, 75, 0.14),
+    0 8px 24px -12px rgba(30, 27, 75, 0.08);
   --shadow-inner-glow: inset 0 0 0 1px rgba(255, 255, 255, 0.5);
 
-  /* Bento shell (light gutters like reference, brand-aligned) */
-  --bento-canvas: #f3f1eb;
-  --bento-tray: #e8e5de;
+  /* Warm shell — avoids flat “dead grey” */
+  --bento-canvas: #f7f4ed;
+  --bento-tray: #f0ebe2;
   --bento-frame: #ffffff;
+  --bento-tray-edge: rgba(30, 27, 75, 0.04);
 }
 
 @theme inline {
@@ -34,7 +37,8 @@
   --color-brand-accent: var(--brand-accent);
   --color-brand-highlight: var(--brand-highlight);
   --color-surface-border: var(--surface-border);
-  --radius-premium: 2.5rem; /* 40px */
+  /* Match padding: keep radius modest so corners don’t eat labels/icons */
+  --radius-premium: 0.875rem;
 }
 
 * {
@@ -44,7 +48,11 @@
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  background-image:
+    radial-gradient(1200px 800px at 15% -10%, rgba(124, 58, 237, 0.06), transparent 55%),
+    radial-gradient(900px 600px at 100% 0%, rgba(245, 158, 11, 0.07), transparent 50%),
+    linear-gradient(165deg, #fdfcfa 0%, #f7f4ef 45%, #f2ede4 100%);
   color: var(--foreground);
   min-height: 100vh;
   overflow-x: hidden;
@@ -55,13 +63,19 @@ body {
 .fluid-card {
   background: var(--surface);
   box-shadow: var(--shadow-soft-xl);
+  /* Radius applied in components (Tailwind) so padding/radius stay consistent */
   border-radius: var(--radius-premium);
-  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  border: 1px solid var(--surface-border);
+  transition: box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  border: 1px solid rgba(30, 27, 75, 0.07);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .fluid-card:hover {
-  box-shadow: 0 45px 75px -15px rgba(30, 27, 75, 0.12);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 28px 56px -20px rgba(30, 27, 75, 0.16),
+    0 12px 28px -14px rgba(30, 27, 75, 0.1);
 }
 
 /* Custom Scrollbar for Premium Feel */
