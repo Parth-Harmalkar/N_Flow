@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { Container } from "@/components/ui/Container";
 import { Users, Search, Filter, Mail, UserCheck, ShieldCheck, Briefcase } from "lucide-react";
 import { getPersonnel } from "../actions/users";
@@ -128,9 +129,12 @@ export default function EmployeesPage() {
                       </div>
                     </td>
                     <td className="text-right">
-                      <button type="button" className="text-xs font-semibold text-[var(--brand-primary)] hover:text-[var(--brand-accent)] transition-colors">
+                      <Link 
+                        href={`/admin/employees/${emp.id}`}
+                        className="text-xs font-semibold text-[var(--brand-primary)] hover:text-[var(--brand-accent)] transition-colors"
+                      >
                         View profile
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))

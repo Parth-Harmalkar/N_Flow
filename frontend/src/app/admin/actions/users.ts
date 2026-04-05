@@ -35,29 +35,14 @@ export async function createUser(formData: {
     password: formData.password,
     email_confirm: true,
     user_metadata: {
-      full_name: formData.name,
-      role: formData.role
+      name: formData.name,
+      role: formData.role,
+      employee_id: formData.employee_id
     }
   })
 
   if (authError) throw authError
   if (!authUser.user) throw new Error('Failed to create user account.')
-
-  // 3. Create Public Profile
-  const { error: profileError } = await adminClient
-    .from('profiles')
-    .insert({
-      id: authUser.user.id,
-      name: formData.name,
-      role: formData.role,
-      employee_id: formData.employee_id
-    })
-
-  if (profileError) {
-    // Cleanup auth user if profile creation fails
-    await adminClient.auth.admin.deleteUser(authUser.user.id)
-    throw profileError
-  }
 
   revalidatePath('/admin/users')
   return { success: true }

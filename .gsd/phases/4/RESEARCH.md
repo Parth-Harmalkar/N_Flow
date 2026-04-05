@@ -1,7 +1,11 @@
 # Phase 4 Research - Analytics & AI Integration
 
 ## Overview
-Phase 4 focuses on visual data representation (Analytics) and AI-assisted performance evaluation (OpenAI). The goal is to provide Admins with high-level oversight of employee efficiency and automated summaries.
+Phase 4 focuses on visual data representation (Analytics) and AI-assisted performance evaluation (OpenAI). A core mandate of this phase is **Zero Static Data**: all metrics, charts, and summaries must be derived dynamically from Supabase `logs` and `tasks`.
+
+## Zero Static Data Mandate
+> [!IMPORTANT]
+> All UI components currently using hardcoded mock data (e.g., `Strategic Insight Feed`, `Execution Velocity`) must be converted to live Supabase aggregations in this phase.
 
 ## Key Research Outcomes
 
