@@ -4,54 +4,65 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { 
-  LayoutDashboard, 
-  CheckSquare, 
-  Users, 
-  ClipboardList, 
-  BarChart3, 
+import {
+  LayoutDashboard,
+  CheckSquare,
+  Users,
+  ClipboardList,
+  BarChart3,
   LogOut,
   Clock,
   History,
-  AlertCircle
+  AlertCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
 
 interface SidebarProps {
   role: 'admin' | 'employee';
 }
 
+const adminLinks = [
+  { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+  { name: 'Tasks', href: '/admin/tasks', icon: CheckSquare },
+  { name: 'Personnel', href: '/admin/users', icon: Users },
+  { name: 'Logs', href: '/admin/logs', icon: ClipboardList },
+  { name: 'Risks', href: '/admin/risks', icon: AlertCircle },
+  { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
+];
+
+const employeeLinks = [
+  { name: 'Dashboard', href: '/employee/dashboard', icon: LayoutDashboard },
+  { name: 'My Tasks', href: '/employee/tasks', icon: Clock },
+  { name: 'Submit Log', href: '/employee/logs', icon: History },
+];
+
 const Sidebar = ({ role }: SidebarProps) => {
   const pathname = usePathname();
-
-  const adminLinks = [
-    { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Tasks', href: '/admin/tasks', icon: CheckSquare },
-    { name: 'Personnel', href: '/admin/users', icon: Users },
-    { name: 'Logs', href: '/admin/logs', icon: ClipboardList },
-    { name: 'Risks', href: '/admin/risks', icon: AlertCircle },
-    { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-  ];
-
-  const employeeLinks = [
-    { name: 'Dashboard', href: '/employee/dashboard', icon: LayoutDashboard },
-    { name: 'My Tasks', href: '/employee/tasks', icon: Clock },
-    { name: 'Submit Log', href: '/employee/logs', icon: History },
-  ];
-
   const links = role === 'admin' ? adminLinks : employeeLinks;
 
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/login');
+    router.refresh();
+  }
+
   return (
-    <aside className="z-50 flex w-24 shrink-0 flex-col items-center self-stretch rounded-2xl bg-brand-primary py-8 text-white shadow-[0_24px_50px_-12px_rgba(30,27,75,0.45)] ring-1 ring-white/10 md:w-28 lg:w-32 lg:rounded-[1.25rem]">
-      {/* Branding */}
-      <div className="mb-12">
-        <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/5 shadow-inner">
-          <span className="text-brand-accent font-black text-2xl italic">N</span>
-        </div>
+    <aside className="relative flex w-[60px] shrink-0 flex-col items-center border-r border-[var(--surface-border)] bg-[var(--surface-1)] py-5">
+      {/* Logo */}
+      <div className="mb-8 flex h-9 w-9 items-center justify-center rounded-lg border border-[rgba(99,102,241,0.3)] bg-[var(--brand-primary-dim)]" style={{ boxShadow: '0 0 20px rgba(99,102,241,0.2)' }}>
+        <span className="text-base font-black italic text-[var(--brand-accent)]">N</span>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 flex flex-col gap-6 items-center">
+      {/* Divider */}
+      <div className="mb-4 w-8 border-t border-[var(--surface-border)]" />
+
+      {/* Nav */}
+      <nav className="flex flex-1 flex-col items-center gap-1">
         {links.map((link) => {
           const isActive = pathname === link.href;
           const Icon = link.icon;
@@ -61,35 +72,36 @@ const Sidebar = ({ role }: SidebarProps) => {
               key={link.href}
               href={link.href}
               className={cn(
-                "group relative p-4 rounded-3xl transition-all duration-300",
-                isActive 
-                  ? "bg-brand-accent text-brand-primary shadow-[0_0_20px_rgba(245,158,11,0.4)]" 
-                  : "text-white/40 hover:text-white hover:bg-white/5"
+                'group relative flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200',
+                isActive
+                  ? 'bg-[var(--brand-primary-dim)] text-[var(--brand-primary)]'
+                  : 'text-[var(--foreground-subtle)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground-muted)]'
               )}
+              style={isActive ? { boxShadow: '0 0 12px rgba(99,102,241,0.2)' } : {}}
             >
-              <Icon className="w-6 h-6" />
-              
-              {/* Tooltip on Hover */}
-              <div className="absolute left-full ml-4 px-3 py-1.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl">
-                {link.name}
-              </div>
-
               {isActive && (
                 <motion.div
-                  layoutId="active-glow"
-                  className="absolute inset-0 bg-brand-accent/20 blur-xl -z-10 rounded-full"
-                  transition={{ type: "spring", bounce: 0.4, duration: 0.6 }}
+                  layoutId="sidebar-active"
+                  className="absolute inset-0 rounded-lg border border-[rgba(99,102,241,0.25)] bg-[var(--brand-primary-dim)]"
+                  transition={{ type: 'spring', bounce: 0.3, duration: 0.5 }}
                 />
               )}
+              <Icon className="relative z-10 h-4 w-4" />
+
+              {/* Tooltip */}
+              <div className="pointer-events-none absolute left-full ml-3 whitespace-nowrap rounded-md border border-[var(--surface-border)] bg-[var(--surface-2)] px-2.5 py-1.5 text-[11px] font-semibold text-[var(--foreground)] opacity-0 shadow-xl transition-opacity group-hover:opacity-100 z-50">
+                {link.name}
+              </div>
             </Link>
           );
         })}
       </nav>
 
       {/* Logout */}
-      <button className="p-4 rounded-3xl text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 group relative">
-        <LogOut className="w-6 h-6" />
-        <div className="absolute left-full ml-4 px-3 py-1.5 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl">
+      <div className="mt-2 w-8 border-t border-[var(--surface-border)] mb-2" />
+      <button onClick={handleLogout} className="group relative flex h-10 w-10 items-center justify-center rounded-lg text-[var(--foreground-subtle)] transition-all hover:bg-[rgba(239,68,68,0.08)] hover:text-[var(--status-danger)]">
+        <LogOut className="h-4 w-4" />
+        <div className="pointer-events-none absolute left-full ml-3 whitespace-nowrap rounded-md border border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.1)] px-2.5 py-1.5 text-[11px] font-semibold text-[var(--status-danger)] opacity-0 shadow-xl transition-opacity group-hover:opacity-100 z-50">
           Logout
         </div>
       </button>

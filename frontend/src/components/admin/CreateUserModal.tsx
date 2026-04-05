@@ -18,7 +18,7 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
     email: '',
     employee_id: '',
     role: 'employee' as 'admin' | 'employee',
-    password: ''
+    password: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,113 +28,99 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
       await createUser(formData);
       onSuccess();
       onClose();
-      setFormData({
-        name: '',
-        email: '',
-        employee_id: '',
-        role: 'employee',
-        password: ''
-      });
+      setFormData({ name: '', email: '', employee_id: '', role: 'employee', password: '' });
     } catch (error: any) {
-      console.error(error);
       alert(error.message || 'Failed to provision user.');
     } finally {
       setLoading(false);
     }
   };
 
+  const labelClass = 'block text-[10px] font-bold uppercase tracking-widest text-[var(--foreground-subtle)] mb-1.5';
+  const fieldClass = 'dark-input w-full py-2.5 px-4 text-sm';
+
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
           />
           <motion.div
-            initial={{ scale: 0.95, opacity: 0, y: 30 }}
+            initial={{ scale: 0.95, opacity: 0, y: 16 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 30 }}
-            className="w-full max-w-xl bg-white rounded-[3rem] overflow-hidden shadow-2xl relative z-10 border border-slate-100"
+            exit={{ scale: 0.95, opacity: 0, y: 16 }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+            className="relative z-10 w-full max-w-lg overflow-hidden rounded-xl border border-[var(--surface-border)] bg-[var(--surface-1)] shadow-[0_32px_80px_rgba(0,0,0,0.6)]"
           >
-            {/* Header Island */}
-            <div className="p-10 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
-              <div className="flex items-center gap-4">
-                <div className="p-4 bg-brand-purple rounded-2xl shadow-lg shadow-brand-purple/20">
-                  <UserPlus className="w-8 h-8 text-white" />
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-[var(--surface-border)] bg-[var(--surface-2)] px-6 py-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--brand-primary-dim)] text-[var(--brand-primary)]" style={{ border: '1px solid rgba(99,102,241,0.25)' }}>
+                  <UserPlus className="h-4 w-4" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-black text-slate-900 tracking-tighter">Provision Personnel</h2>
-                  <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">Identity Management Suite</p>
+                  <h2 className="font-bold text-[var(--foreground)]">Provision Personnel</h2>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--foreground-subtle)]">Identity Management</p>
                 </div>
               </div>
-              <button
-                onClick={onClose}
-                className="p-3 rounded-2xl hover:bg-slate-100 transition-colors"
-              >
-                <X className="w-6 h-6 text-slate-400" />
+              <button onClick={onClose} className="rounded-lg p-1.5 text-[var(--foreground-subtle)] hover:bg-[var(--surface-3)] hover:text-[var(--foreground)] transition-colors">
+                <X className="h-5 w-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-10 space-y-8">
-              <div className="grid grid-cols-2 gap-8">
-                <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
-                    Full Legal Name
-                  </label>
+            <form onSubmit={handleSubmit} className="space-y-5 p-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>Full Name</label>
                   <input
                     required
                     type="text"
-                    placeholder="e.g. Alexander Pierce"
-                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:ring-4 focus:ring-brand-purple/5 focus:border-brand-purple/30 transition-all font-bold placeholder:text-slate-300"
+                    placeholder="Alexander Pierce"
+                    className={fieldClass}
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
                 </div>
-                <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
-                    Employee ID
-                  </label>
+                <div>
+                  <label className={labelClass}>Employee ID</label>
                   <input
                     required
                     type="text"
-                    placeholder="e.g. EMP-2024-001"
-                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-slate-900 focus:outline-none focus:ring-4 focus:ring-brand-purple/5 focus:border-brand-purple/30 transition-all font-bold placeholder:text-slate-300"
+                    placeholder="EMP-2024-001"
+                    className={fieldClass}
                     value={formData.employee_id}
                     onChange={(e) => setFormData({ ...formData, employee_id: e.target.value })}
                   />
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
-                  Corporate Email
-                </label>
+              <div>
+                <label className={labelClass}>Corporate Email</label>
                 <div className="relative">
-                  <Mail className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+                  <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-subtle)]" />
                   <input
                     required
                     type="email"
                     placeholder="a.pierce@company.com"
-                    className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-16 pr-6 py-4 text-slate-900 focus:outline-none focus:ring-4 focus:ring-brand-purple/5 focus:border-brand-purple/30 transition-all font-bold placeholder:text-slate-300"
+                    className={fieldClass + ' pl-10'}
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-8">
-                <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
-                    System Position
-                  </label>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={labelClass}>System Role</label>
                   <div className="relative">
-                    <Shield className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+                    <Shield className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-subtle)]" />
                     <select
-                      className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-16 pr-6 py-4 text-slate-900 focus:outline-none focus:ring-4 focus:ring-brand-purple/5 focus:border-brand-purple/30 transition-all appearance-none font-bold"
+                      className={fieldClass + ' pl-10 appearance-none'}
                       value={formData.role}
                       onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'employee' })}
                     >
@@ -143,17 +129,15 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
                     </select>
                   </div>
                 </div>
-                <div className="space-y-3">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
-                    Initial Access Code
-                  </label>
+                <div>
+                  <label className={labelClass}>Initial Password</label>
                   <div className="relative">
-                    <Key className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300" />
+                    <Key className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-subtle)]" />
                     <input
                       required
                       type="password"
                       placeholder="••••••••"
-                      className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-16 pr-6 py-4 text-slate-900 focus:outline-none focus:ring-4 focus:ring-brand-purple/5 focus:border-brand-purple/30 transition-all font-black placeholder:text-slate-300"
+                      className={fieldClass + ' pl-10'}
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     />
@@ -161,28 +145,17 @@ export function CreateUserModal({ isOpen, onClose, onSuccess }: CreateUserModalP
                 </div>
               </div>
 
-              {/* Notice Island */}
-              <div className="bg-slate-50/50 p-6 rounded-3xl flex gap-4 text-slate-500 border border-slate-100/50">
-                <Info className="w-6 h-6 text-brand-purple shrink-0 mt-1" />
-                <p className="text-xs font-medium leading-relaxed">
-                  The user will be able to log in immediately with this access code. They will be required to update their credentials for improved security.
+              {/* Notice */}
+              <div className="flex gap-3 rounded-lg border border-[var(--surface-border)] bg-[var(--surface-2)] p-4 text-[var(--foreground-muted)]">
+                <Info className="h-4 w-4 shrink-0 mt-0.5 text-[var(--brand-primary)]" />
+                <p className="text-xs leading-relaxed">
+                  The user can log in immediately with this password and should update their credentials on first sign-in.
                 </p>
               </div>
 
-              <div className="pt-6">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-brand-purple text-white font-black uppercase tracking-[0.2em] py-6 rounded-2xl shadow-xl shadow-brand-purple/10 hover:bg-brand-accent hover:shadow-brand-purple/20 hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-4 disabled:opacity-50"
-                >
-                  {loading ? (
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                  ) : (
-                    <>
-                      <UserPlus className="w-6 h-6" />
-                      Commit to Registry
-                    </>
-                  )}
+              <div className="pt-1">
+                <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-3 disabled:opacity-50">
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><UserPlus className="h-4 w-4" /> Commit to Registry</>}
                 </button>
               </div>
             </form>

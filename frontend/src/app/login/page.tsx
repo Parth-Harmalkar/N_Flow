@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Shield, Key, Mail, Loader2, ArrowRight } from 'lucide-react';
-import { login } from '../auth/actions/login';
-import { Panel } from '@/components/ui/GlassCard';
-import { motion } from 'framer-motion';
+import React, { useState } from "react";
+import { Key, Mail, Loader2, ArrowRight, AlertCircle } from "lucide-react";
+import { login } from "../auth/actions/login";
+import { motion } from "framer-motion";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,117 +18,147 @@ export default function LoginPage() {
     try {
       await login({ email, password });
     } catch (err: any) {
-      setError(err.message || 'Invalid credentials');
+      setError(err.message || "Invalid credentials");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--bento-canvas)] p-4 md:p-6">
-      <div className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(30,27,75,0.07)_1px,transparent_1px)] [background-size:24px_24px]" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden p-4">
+      {/* Background effects */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-1/4 top-0 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--brand-primary)] opacity-[0.07] blur-[120px]" />
+        <div className="absolute right-0 bottom-0 h-[400px] w-[400px] translate-x-1/3 translate-y-1/3 rounded-full bg-[var(--brand-secondary)] opacity-[0.05] blur-[100px]" />
+        {/* Grid */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `linear-gradient(var(--surface-border) 1px, transparent 1px), linear-gradient(90deg, var(--surface-border) 1px, transparent 1px)`,
+            backgroundSize: "48px 48px",
+          }}
+        />
+      </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 16 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 w-full max-w-5xl"
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10 w-full max-w-4xl"
       >
-        <div className="rounded-[1.75rem] border-[10px] border-[var(--bento-frame)] bg-[var(--bento-tray)] p-4 shadow-inner md:rounded-[2rem] md:border-[12px] md:p-5 [background-image:radial-gradient(rgba(30,27,75,0.06)_1px,transparent_1px)] [background-size:20px_20px]">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
-            <Panel animate={false} className="min-h-[280px] justify-between bg-brand-primary text-white md:min-h-[420px]">
-              <div>
-                <div className="mb-8 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 shadow-inner">
-                  <span className="text-3xl font-black italic text-brand-accent">N</span>
-                </div>
-                <h1 className="text-3xl font-black tracking-tight md:text-4xl">N-FLOW</h1>
-                <p className="mt-3 text-[11px] font-black uppercase tracking-[0.35em] text-white/50">
-                  Strategic Resource Interface
-                </p>
+        <div className="grid grid-cols-1 overflow-hidden rounded-2xl border border-[var(--surface-border)] bg-[var(--surface-1)] shadow-[0_32px_80px_rgba(0,0,0,0.6)] md:grid-cols-2">
+          {/* Left panel — brand */}
+          <div className="relative flex flex-col justify-between overflow-hidden p-10 md:p-12">
+            {/* Brand gradient bg */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[rgba(99,102,241,0.2)] via-[rgba(99,102,241,0.05)] to-transparent" />
+            <div className="pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-[var(--brand-accent)] opacity-10 blur-[80px]" />
+
+            <div className="relative z-10">
+              {/* Logo mark */}
+              <div className="mb-10 flex h-12 w-12 items-center justify-center rounded-xl border border-[rgba(99,102,241,0.3)] bg-[rgba(99,102,241,0.15)] shadow-[0_0_20px_rgba(99,102,241,0.2)]">
+                <span className="text-xl font-black italic text-[var(--brand-accent)]">N</span>
               </div>
-              <p className="max-w-sm text-sm font-medium leading-relaxed text-white/60">
-                Modular workspace for operations, risk, and personnel — structured like clear tiles, not a single floating card.
+
+              <h1 className="text-4xl font-black tracking-tight text-[var(--foreground)] md:text-5xl">
+                N-FLOW
+              </h1>
+              <p className="mt-3 text-xs font-bold uppercase tracking-[0.3em] text-[var(--foreground-subtle)]">
+                Strategic Resource Interface
               </p>
-            </Panel>
 
-            <Panel animate={false} className="justify-center">
-              <form onSubmit={onSubmit} className="space-y-6">
-                <div className="border-b border-slate-100 pb-6 text-center">
-                  <h2 className="text-xs font-bold uppercase tracking-widest text-brand-primary">
-                    Secure Authentication
-                  </h2>
+              <p className="mt-8 max-w-xs text-sm leading-relaxed text-[var(--foreground-muted)]">
+                Modular workspace for operations, risk management, and personnel — structured for clarity, built for scale.
+              </p>
+            </div>
+
+            {/* Bottom stats */}
+            <div className="relative z-10 mt-12 flex items-center gap-6 border-t border-[var(--surface-border)] pt-8">
+              {[
+                { label: "Uptime", value: "99.9%" },
+                { label: "Encryption", value: "AES-256" },
+                { label: "Version", value: "v2.0.4" },
+              ].map((s) => (
+                <div key={s.label}>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--foreground-subtle)]">{s.label}</p>
+                  <p className="mt-0.5 text-sm font-bold text-[var(--foreground-muted)]">{s.value}</p>
                 </div>
-
-                <div className="space-y-2">
-                  <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                    Corporate ID
-                  </label>
-                  <div className="group relative">
-                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-brand-accent" />
-                    <input
-                      required
-                      type="email"
-                      placeholder="name@organization.com"
-                      className="w-full rounded-xl border border-surface-border bg-slate-50 py-3 pl-10 pr-4 text-sm font-medium text-slate-900 transition-all placeholder:text-slate-400 focus:border-brand-accent/40 focus:outline-none focus:ring-2 focus:ring-brand-accent/20"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                    Gateway Key
-                  </label>
-                  <div className="group relative">
-                    <Key className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 transition-colors group-focus-within:text-brand-accent" />
-                    <input
-                      required
-                      type="password"
-                      placeholder="••••••••"
-                      className="w-full rounded-xl border border-surface-border bg-slate-50 py-3 pl-10 pr-4 text-sm font-medium text-slate-900 transition-all placeholder:text-slate-400 focus:border-brand-accent/40 focus:outline-none focus:ring-2 focus:ring-brand-accent/20"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex items-center gap-3 rounded-xl border border-red-100 bg-red-50 p-4 text-red-600"
-                  >
-                    <Shield className="h-4 w-4 shrink-0" />
-                    <p className="text-[11px] font-bold uppercase tracking-tight">{error}</p>
-                  </motion.div>
-                )}
-
-                <button
-                  disabled={loading}
-                  className="group flex w-full items-center justify-center gap-3 rounded-xl bg-brand-primary py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-brand-primary/95 hover:shadow-lg disabled:opacity-50"
-                >
-                  {loading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <>
-                      Establish Connection
-                      <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                    </>
-                  )}
-                </button>
-              </form>
-            </Panel>
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="mt-8 flex justify-between px-2">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
-            Encrypted Session
-          </p>
-          <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">
-            v2.0.4-Stable
-          </p>
+          {/* Right panel — form */}
+          <div className="flex flex-col justify-center border-l border-[var(--surface-border)] p-10 md:p-12">
+            <div className="mb-8">
+              <h2 className="text-xl font-bold text-[var(--foreground)]">Sign in</h2>
+              <p className="mt-1 text-sm text-[var(--foreground-muted)]">Enter your credentials to access the platform.</p>
+            </div>
+
+            <form onSubmit={onSubmit} className="space-y-5">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-widest text-[var(--foreground-subtle)]">
+                  Corporate email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-subtle)]" />
+                  <input
+                    required
+                    type="email"
+                    placeholder="name@organization.com"
+                    className="dark-input w-full py-3 pl-10 pr-4 text-sm"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-widest text-[var(--foreground-subtle)]">
+                  Password
+                </label>
+                <div className="relative">
+                  <Key className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-subtle)]" />
+                  <input
+                    required
+                    type="password"
+                    placeholder="••••••••"
+                    className="dark-input w-full py-3 pl-10 pr-4 text-sm"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-3 rounded-lg border border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.08)] p-3.5 text-[var(--status-danger)]"
+                >
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <p className="text-xs font-semibold">{error}</p>
+                </motion.div>
+              )}
+
+              <button
+                disabled={loading}
+                className="btn-primary w-full justify-center py-3 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    Access Platform
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="mt-8 flex items-center gap-2">
+              <span className="pulse-dot green" />
+              <span className="text-xs text-[var(--foreground-subtle)]">Encrypted session — end-to-end secure</span>
+            </div>
+          </div>
         </div>
       </motion.div>
     </div>

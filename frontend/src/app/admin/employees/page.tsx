@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { Container } from "@/components/ui/Container";
-import { Panel } from "@/components/ui/GlassCard";
 import { Users, Search, Filter, Mail, UserCheck, ShieldCheck, Briefcase } from "lucide-react";
 import { getPersonnel } from "../actions/users";
+import { cn } from "@/lib/utils";
 
 export default function EmployeesPage() {
   const [employees, setEmployees] = useState<any[]>([]);
@@ -12,10 +12,7 @@ export default function EmployeesPage() {
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    getPersonnel().then((data) => {
-      setEmployees(data);
-      setLoading(false);
-    });
+    getPersonnel().then((data) => { setEmployees(data); setLoading(false); });
   }, []);
 
   const filtered = employees.filter((e) => {
@@ -28,149 +25,110 @@ export default function EmployeesPage() {
     );
   });
 
-  const employeesOnly = employees.filter((e) => e.role === "employee").length;
+  const statCards = [
+    { label: "Total staff", value: employees.length, icon: Users, color: "text-[var(--brand-secondary)]" },
+    { label: "Employees", value: employees.filter((e) => e.role === "employee").length, icon: UserCheck, color: "text-[var(--status-success)]" },
+    { label: "Admins", value: employees.filter((e) => e.role === "admin").length, icon: Briefcase, color: "text-[var(--brand-accent)]" },
+    { label: "Verified access", value: employees.length, icon: ShieldCheck, color: "text-[var(--brand-primary)]" },
+  ];
 
   return (
-    <Container
-      title="Employee Directory"
-      subtitle="Roster of personnel, credentials, and verification status."
-    >
+    <Container title="Employee Directory" subtitle="Roster of personnel, credentials, and verification status.">
+      {/* Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-5">
-        <Panel className="flex items-center gap-3">
-          <div className="rounded-xl bg-blue-50 p-3 text-blue-600">
-            <Users className="h-6 w-6" />
+        {statCards.map((s, i) => (
+          <div key={i} className="dark-card flex items-center gap-4 p-5">
+            <div className={cn("rounded-lg bg-[var(--surface-2)] p-3", s.color)}>
+              <s.icon className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-[var(--foreground-muted)]">{s.label}</p>
+              <h3 className="text-2xl font-black text-[var(--foreground)]">{loading ? "—" : s.value}</h3>
+            </div>
           </div>
-          <div>
-            <p className="text-xs font-bold text-slate-500">Total staff</p>
-            <h3 className="text-2xl font-black text-brand-primary">
-              {loading ? "—" : employees.length}
-            </h3>
-          </div>
-        </Panel>
-        <Panel className="flex items-center gap-3">
-          <div className="rounded-xl bg-green-50 p-3 text-green-600">
-            <UserCheck className="h-6 w-6" />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-slate-500">Employees</p>
-            <h3 className="text-2xl font-black text-brand-primary">
-              {loading ? "—" : employeesOnly}
-            </h3>
-          </div>
-        </Panel>
-        <Panel className="flex items-center gap-3">
-          <div className="rounded-xl bg-purple-50 p-3 text-brand-highlight">
-            <Briefcase className="h-6 w-6" />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-slate-500">Admins</p>
-            <h3 className="text-2xl font-black text-brand-primary">
-              {loading ? "—" : employees.filter((e) => e.role === "admin").length}
-            </h3>
-          </div>
-        </Panel>
-        <Panel className="flex items-center gap-3">
-          <div className="rounded-xl bg-amber-50 p-3 text-brand-accent">
-            <ShieldCheck className="h-6 w-6" />
-          </div>
-          <div>
-            <p className="text-xs font-bold text-slate-500">Verified access</p>
-            <h3 className="text-2xl font-black text-brand-primary">
-              {loading ? "—" : employees.length}
-            </h3>
-          </div>
-        </Panel>
+        ))}
       </div>
 
-      <Panel noPadding className="overflow-hidden">
-        <div className="flex flex-col gap-4 border-b border-surface-border bg-slate-50/50 p-4 md:flex-row md:items-center md:justify-between md:p-5">
-          <div className="relative min-w-0 w-full max-w-md flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      {/* Table */}
+      <div className="dark-card overflow-hidden">
+        {/* Search */}
+        <div className="flex flex-col gap-4 border-b border-[var(--surface-border)] p-4 md:flex-row md:items-center md:p-5">
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--foreground-subtle)]" />
             <input
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Filter by name, ID or email..."
-              className="w-full min-w-0 rounded-lg border border-surface-border bg-white py-2.5 pl-10 pr-4 text-sm transition-all placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-accent/20"
+              className="dark-input w-full py-2.5 pl-10 pr-4 text-sm"
             />
           </div>
-          <button
-            type="button"
-            className="flex shrink-0 items-center gap-2 rounded-lg border border-surface-border bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
-          >
-            <Filter className="h-4 w-4" />
-            Advanced filters
+          <button type="button" className="btn-ghost text-xs">
+            <Filter className="h-4 w-4" /> Advanced filters
           </button>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] text-left">
+          <table className="dark-table w-full min-w-[640px] text-left">
             <thead>
-              <tr className="border-b border-surface-border bg-slate-50/50 text-xs font-medium uppercase tracking-widest text-slate-500">
-                <th className="px-6 py-4">Employee</th>
-                <th className="px-6 py-4">ID reference</th>
-                <th className="px-6 py-4">Role</th>
-                <th className="px-6 py-4">Security</th>
-                <th className="px-6 py-4 text-right">Actions</th>
+              <tr>
+                <th>Employee</th>
+                <th>ID reference</th>
+                <th>Role</th>
+                <th>Security</th>
+                <th className="text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-surface-border">
+            <tbody>
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <tr key={i} className="animate-pulse">
-                    <td colSpan={5} className="h-16 bg-slate-50/30 px-6" />
+                  <tr key={i}>
+                    <td colSpan={5}>
+                      <div className="h-4 w-full animate-pulse rounded bg-[var(--surface-2)]" />
+                    </td>
                   </tr>
                 ))
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-16 text-center text-slate-400">
+                  <td colSpan={5} className="py-16 text-center text-[var(--foreground-muted)]">
                     <Users className="mx-auto mb-3 h-10 w-10 opacity-20" />
-                    <p className="font-medium text-slate-600">No matches</p>
+                    <p className="font-semibold text-[var(--foreground)]">No matches</p>
                     <p className="text-sm">Clear search to see the full directory.</p>
                   </td>
                 </tr>
               ) : (
                 filtered.map((emp) => (
-                  <tr key={emp.id} className="transition-colors hover:bg-slate-50/50">
-                    <td className="px-6 py-4">
+                  <tr key={emp.id}>
+                    <td>
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-primary/10 text-sm font-bold text-brand-primary">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--brand-primary-dim)] border border-[rgba(99,102,241,0.2)] text-sm font-bold text-[var(--brand-accent)]">
                           {emp.name.charAt(0)}
                         </div>
                         <div className="min-w-0">
-                          <p className="font-semibold text-slate-900">{emp.name}</p>
-                          <p className="flex items-center gap-1 text-xs text-slate-400">
+                          <p className="font-semibold text-[var(--foreground)]">{emp.name}</p>
+                          <p className="flex items-center gap-1 text-xs text-[var(--foreground-muted)]">
                             <Mail className="h-3 w-3 shrink-0" />
                             <span className="truncate">{emp.email}</span>
                           </p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-mono text-xs text-slate-500">
-                      {emp.employee_id || "N-FLOW-001"}
+                    <td>
+                      <span className="font-mono text-xs text-[var(--foreground-muted)]">{emp.employee_id || "N-FLOW-001"}</span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${
-                          emp.role === "admin"
-                            ? "border-purple-100 bg-purple-50 text-purple-700"
-                            : "border-blue-100 bg-blue-50 text-blue-700"
-                        }`}
-                      >
+                    <td>
+                      <span className={cn("badge", emp.role === "admin" ? "badge-violet" : "badge-cyan")}>
                         {emp.role.toUpperCase()}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1.5 text-sm text-slate-500">
-                        <ShieldCheck className="h-4 w-4 text-green-500" />
-                        Verified
+                    <td>
+                      <div className="flex items-center gap-1.5 text-sm text-[var(--status-success)]">
+                        <ShieldCheck className="h-4 w-4" />
+                        <span className="text-xs text-[var(--foreground-muted)]">Verified</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        type="button"
-                        className="text-sm font-semibold text-brand-accent hover:underline"
-                      >
+                    <td className="text-right">
+                      <button type="button" className="text-xs font-semibold text-[var(--brand-primary)] hover:text-[var(--brand-accent)] transition-colors">
                         View profile
                       </button>
                     </td>
@@ -180,7 +138,7 @@ export default function EmployeesPage() {
             </tbody>
           </table>
         </div>
-      </Panel>
+      </div>
     </Container>
   );
 }
