@@ -22,6 +22,12 @@ export const MeetingScheduler = ({ profiles }: MeetingSchedulerProps) => {
     e.preventDefault();
     setLoading(true);
     
+    if (new Date(endTime) <= new Date(startTime)) {
+      alert('Mission Error: Briefing deactivation time must be after activation time.');
+      setLoading(false);
+      return;
+    }
+    
     const result = await createMeeting({
       title,
       description,
@@ -49,6 +55,14 @@ export const MeetingScheduler = ({ profiles }: MeetingSchedulerProps) => {
     setSelectedAttendees(prev => 
       prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
     );
+  };
+
+  const selectAll = () => {
+    if (selectedAttendees.length === profiles.length) {
+      setSelectedAttendees([]);
+    } else {
+      setSelectedAttendees(profiles.map(p => p.id));
+    }
   };
 
   return (
@@ -114,22 +128,40 @@ export const MeetingScheduler = ({ profiles }: MeetingSchedulerProps) => {
       <div className="space-y-2">
          <label className="text-[10px] font-bold uppercase tracking-widest text-[var(--foreground-muted)] flex items-center justify-between">
             Assign Personnel
-            <span className="text-[var(--brand-primary)]">{selectedAttendees.length} Selected</span>
+            <button 
+              type="button" 
+              onClick={selectAll}
+              className="text-[var(--brand-primary)] hover:underline cursor-pointer"
+            >
+              {selectedAttendees.length === profiles.length ? 'Deselect All' : 'Select All Fleet'}
+            </button>
          </label>
          <div className="max-h-32 overflow-y-auto rounded-lg border border-[var(--surface-border)] bg-[var(--surface-3)] divide-y divide-[var(--surface-border)] custom-scrollbar">
             {profiles.map(p => (
-               <div 
-                  key={p.id} 
-                  onClick={() => toggleAttendee(p.id)}
-                  className="flex items-center justify-between px-3 py-2 hover:bg-[var(--surface-2)] cursor-pointer transition-colors"
-               >
-                  <span className="text-[11px] font-bold text-[var(--foreground)]">{p.name}</span>
-                  {selectedAttendees.includes(p.id) ? (
-                     <Check className="h-3.5 w-3.5 text-[var(--status-success)]" />
-                  ) : (
-                     <Plus className="h-3.5 w-3.5 text-[var(--foreground-subtle)]" />
-                  )}
-               </div>
+                <div 
+                   key={p.id} 
+                   onClick={() => toggleAttendee(p.id)}
+                   className={cn(
+                     "flex items-center justify-between px-3 py-2 cursor-pointer transition-all",
+                     selectedAttendees.includes(p.id) ? "bg-[var(--brand-primary-dim)]" : "hover:bg-[var(--surface-2)]"
+                   )}
+                >
+                   <div className="flex items-center gap-2">
+                      <div className={cn(
+                        "h-1.5 w-1.5 rounded-full",
+                        selectedAttendees.includes(p.id) ? "bg-[var(--brand-primary)]" : "bg-[var(--surface-border)]"
+                      )} />
+                      <span className={cn(
+                        "text-[11px] font-bold",
+                        selectedAttendees.includes(p.id) ? "text-[var(--brand-primary)]" : "text-[var(--foreground)]"
+                      )}>{p.name}</span>
+                   </div>
+                   {selectedAttendees.includes(p.id) ? (
+                      <Check className="h-3.5 w-3.5 text-[var(--brand-primary)]" />
+                   ) : (
+                      <Plus className="h-3.5 w-3.5 text-[var(--foreground-subtle)]" />
+                   )}
+                </div>
             ))}
          </div>
       </div>

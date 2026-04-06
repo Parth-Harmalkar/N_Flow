@@ -51,7 +51,7 @@ export default async function AttendancePage() {
   }
 
   const presentCount = attendance?.filter((a: any) => a.status === 'present').length || 0;
-  const lopCount = attendance?.filter((a: any) => a.status === 'lop').length || 0;
+  const absentCount = attendance?.filter((a: any) => a.status === 'absent').length || 0;
 
   return (
     <Container 
@@ -84,22 +84,22 @@ export default async function AttendancePage() {
                           </div>
                           <span className="text-lg font-black text-[var(--foreground)]">{presentCount}</span>
                        </div>
-                       <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--surface-2)] border border-[var(--surface-border)]">
+                        <div className="flex items-center justify-between p-4 rounded-xl bg-[var(--surface-2)] border border-[var(--surface-border)]">
                           <div className="flex items-center gap-3">
                              <div className="h-8 w-8 rounded-lg bg-[var(--status-danger-dim)] flex items-center justify-center text-[var(--status-danger)]">
                                 <AlertTriangle className="h-4 w-4" />
                              </div>
-                             <span className="text-xs font-bold text-[var(--foreground)]">Loss of Pay</span>
+                             <span className="text-xs font-bold text-[var(--foreground)]">Absent</span>
                           </div>
-                          <span className="text-lg font-black text-[var(--foreground)]">{lopCount}</span>
+                          <span className="text-lg font-black text-[var(--foreground)]">{absentCount}</span>
                        </div>
                     </>
                  )}
               </div>
               {!isAdmin && (
-                <div className="mt-8 p-4 rounded-xl border border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.05)]">
-                   <p className="text-[10px] text-[var(--status-danger)] font-bold uppercase leading-relaxed">
-                      Note: Missing daily mission logs result in automatic LOP registration. Ensure all sorties are logged.
+                <div className="mt-8 p-4 rounded-xl border border-[var(--surface-border)] bg-[var(--surface-2)]">
+                   <p className="text-[10px] text-[var(--foreground-muted)] font-bold uppercase leading-relaxed text-center">
+                      Note: Continuous presence is recommended for mission success.
                    </p>
                 </div>
               )}

@@ -66,24 +66,30 @@ export const AttendanceTable = ({ profiles, attendance, leaves, dateStr }: Atten
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                   <div className="flex items-center gap-2">
-                      <span className={cn(
-                        "badge text-[9px] py-0.5 font-bold tracking-tight uppercase",
-                        status === 'present' ? 'badge-green' : 
-                        status === 'leave' ? 'badge-violet' : 
-                        status === 'lop' ? 'badge-red' : 'badge-slate'
-                      )}>
-                        {status}
-                      </span>
-                      {isManual && <Info className="h-3 w-3 text-[var(--brand-primary)]" />}
-                   </div>
+                    <div className="flex items-center gap-2">
+                       <span className={cn(
+                         "badge text-[9px] py-1 font-black tracking-tight uppercase px-2.5 rounded-md",
+                         status === 'absent' ? 'bg-[rgba(239,68,68,0.1)] text-[var(--status-danger)] border border-[rgba(239,68,68,0.1)]' : 
+                         status === 'leave' ? 'bg-[rgba(99,102,241,0.1)] text-[var(--brand-primary)] border border-[rgba(99,102,241,0.1)]' : 
+                         'bg-[var(--surface-3)] text-[var(--foreground-muted)] border border-[var(--surface-border)]'
+                       )}>
+                         {status}
+                       </span>
+                       {isManual && (
+                         <div className="group relative">
+                            <Info className="h-3 w-3 text-[var(--brand-primary)]" />
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-black text-white text-[8px] px-2 py-1 rounded whitespace-nowrap z-10">
+                               Manually Verified
+                            </div>
+                         </div>
+                       )}
+                    </div>
                 </td>
                 <td className="px-6 py-4">
-                  <p className="text-[10px] text-[var(--foreground-muted)] italic">
-                    {status === 'absent' && "No mission logs detected."}
-                    {status === 'present' && "Operational presence verified."}
-                    {status === 'lop' && "Strategic failure: Missing logs."}
-                    {status === 'leave' && "Authorized absence."}
+                  <p className="text-[10px] font-medium text-[var(--foreground-muted)] italic">
+                    {status === 'absent' && "Deployment Void: Identity Offline."}
+                    {status === 'present' && "Operational presence confirmed."}
+                    {status === 'leave' && "Authorized Offline Protocol."}
                   </p>
                 </td>
                 <td className="px-6 py-4 text-right">
@@ -102,15 +108,15 @@ export const AttendanceTable = ({ profiles, attendance, leaves, dateStr }: Atten
                       <Check className="h-3.5 w-3.5" />
                     </button>
                     <button
-                      onClick={() => handleUpdate(profile.id, 'lop')}
+                      onClick={() => handleUpdate(profile.id, 'absent')}
                       disabled={loading === profile.id}
                       className={cn(
                         "rounded-lg p-1.5 transition-all text-[var(--foreground-subtle)] hover:bg-[var(--status-danger-dim)] hover:text-[var(--status-danger)]",
-                        status === 'lop' && "bg-[var(--status-danger-dim)] text-[var(--status-danger)]"
+                        status === 'absent' && "bg-[var(--status-danger-dim)] text-[var(--status-danger)]"
                       )}
-                      title="Mark as LOP"
+                      title="Mark as Absent"
                     >
-                      <AlertTriangle className="h-3.5 w-3.5" />
+                      <X className="h-3.5 w-3.5" />
                     </button>
                    
                   </div>

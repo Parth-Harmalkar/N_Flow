@@ -3,7 +3,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function updateAttendance(attendanceId: string, status: 'present' | 'absent' | 'lop' | 'leave' | 'holiday') {
+export async function updateAttendance(attendanceId: string, status: 'present' | 'absent' | 'leave' | 'holiday') {
   const supabase = await createClient()
 
   const { error } = await supabase
@@ -24,7 +24,7 @@ export async function updateAttendance(attendanceId: string, status: 'present' |
   return { success: true }
 }
 
-export async function createManualAttendance(userId: string, date: string, status: 'present' | 'absent' | 'lop' | 'leave' | 'holiday') {
+export async function createManualAttendance(userId: string, date: string, status: 'present' | 'absent' | 'leave' | 'holiday') {
   const supabase = await createClient()
 
   const { error } = await supabase
@@ -174,26 +174,32 @@ export async function createMeeting(data: {
 export async function syncDailyAttendance(dateStr: string) {
   const supabase = await createClient()
   
-  // 1. Fetch all profiles
+  // 1. Fetch all profiles (excluding admins)
   const { data: profiles, error: profileError } = await supabase
     .from('profiles')
-    .select('id')
+    .select('id, name')
     .neq('role', 'admin')
 
   if (profileError || !profiles) return { error: 'Failed to fetch personnel.' }
 
-  // 2. Iterate and sync
+  // 2. Define the date range (Local Time for the day)
+  const startOfDay = `${dateStr}T00:00:00.000`
+  const endOfDay = `${dateStr}T23:59:59.999`
+
+  // 3. Iterate and sync
   const results = await Promise.all(profiles.map(async (profile) => {
-    // Check for logs
+    // Check for logs within the day
+    // Note: We use a broader range check or consider the 'date' column if 'logs' has one.
+    // Assuming 'created_at' is the primary marker.
     const { data: logs } = await supabase
       .from('logs')
       .select('id')
       .eq('user_id', profile.id)
-      .gte('created_at', `${dateStr}T00:00:00Z`)
-      .lte('created_at', `${dateStr}T23:59:59Z`)
+      .gte('start_time', startOfDay) // Assuming start_time/end_time are in ISO
+      .lte('start_time', endOfDay)
       .limit(1)
 
-    // Check for leaves
+    // Check for approved leaves on this date
     const { data: leave } = await supabase
       .from('leaves')
       .select('id')
@@ -201,29 +207,42 @@ export async function syncDailyAttendance(dateStr: string) {
       .eq('status', 'approved')
       .lte('start_date', dateStr)
       .gte('end_date', dateStr)
-      .single()
+      .maybeSingle()
 
-    let status: 'present' | 'absent' | 'lop' | 'leave' = 'absent'
+    let status: 'present' | 'absent' | 'leave' | 'holiday' = 'absent'
     
     if (logs && logs.length > 0) {
       status = 'present'
     } else if (leave) {
       status = 'leave'
     } else {
-      status = 'lop'
+      status = 'absent'
     }
 
-    // Upsert record (only if not manually verified by admin already, or just overwrite if specified)
+    // Upsert record: Don't overwrite if manually verified by admin
+    const { data: existing } = await supabase
+      .from('attendance')
+      .select('verified_by_admin')
+      .eq('user_id', profile.id)
+      .eq('date', dateStr)
+      .maybeSingle()
+
+    if (existing?.verified_by_admin) {
+      return { success: true, skipped: true }
+    }
+
     return supabase.from('attendance').upsert({
       user_id: profile.id,
       date: dateStr,
       status,
-      verified_by_admin: false
+      verified_by_admin: false,
+      updated_at: new Date().toISOString()
     }, { onConflict: 'user_id,date' })
   }))
 
   revalidatePath('/admin/attendance')
-  return { success: true }
+  revalidatePath('/employee/dashboard')
+  return { success: true, count: profiles.length }
 }
 
 import { format } from 'date-fns'

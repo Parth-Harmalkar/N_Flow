@@ -3,13 +3,14 @@ import { Container } from "@/components/ui/Container";
 import { getEmployeeDetailMetrics } from "@/lib/analytics";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
-import { EmployeeAnalysis } from "@/components/admin/EmployeeAnalysis";
+import { EmployeeAttendanceGrid } from "@/components/admin/EmployeeAttendanceGrid";
 import { LogAuditTrail } from "@/components/admin/LogAuditTrail";
 import { PersonalPerformanceChart } from "@/components/analytics/PersonalPerformanceChart";
 import { PersonnelActions } from "@/components/admin/PersonnelActions";
 import { TaskItemActions } from "@/components/admin/TaskItemActions";
-import { Briefcase, Clock, Calendar, CheckCircle2, AlertTriangle, FileText, Zap, TrendingUp, ShieldAlert } from "lucide-react";
+import { Briefcase, Clock, Calendar, CheckCircle2, AlertTriangle, FileText, Zap, TrendingUp, ShieldAlert, History } from "lucide-react";
 import { cn } from "@/lib/utils";
+import * as motion from "framer-motion/client";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +43,7 @@ export default async function EmployeeDetailPage({ params }: any) {
   }
 
   // 2. Fetch Metrics
-  const { logs, tasks } = await getEmployeeDetailMetrics(id);
+  const { logs, tasks, attendance, meetings } = await getEmployeeDetailMetrics(id);
 
   // 3. Simple stats
   const totalHours = logs.reduce((acc, l) => {
@@ -75,9 +76,14 @@ export default async function EmployeeDetailPage({ params }: any) {
   return (
     <Container 
       title={profile.name} 
-      subtitle={`Personnel ID: ${profile.employee_id} • ${profile.role.toUpperCase()}`}
+      subtitle={`Personnel ID: ${profile.employee_id} • ${profile.role.charAt(0).toUpperCase() + profile.role.slice(1)}`}
     >
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 md:gap-8">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="grid grid-cols-1 gap-6 lg:grid-cols-12 md:gap-8"
+      >
         {/* Left Column: Stats & Analysis */}
         <div className="flex flex-col gap-6 lg:col-span-8">
           {/* Quick Stats Banner */}
@@ -87,9 +93,15 @@ export default async function EmployeeDetailPage({ params }: any) {
               { label: "Completed Output", value: completedTasks, icon: CheckCircle2, color: "text-[var(--status-success)]" },
               { label: "Pending Workflow", value: pendingTasks, icon: AlertTriangle, color: "text-[var(--status-warning)]" },
             ].map((s, i) => (
-              <div key={i} className="dark-card p-5">
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.1 }}
+                className="dark-card p-5 bg-gradient-to-br from-[var(--surface-1)] to-[var(--surface-2)]"
+              >
                 <div className="flex items-center gap-3">
-                  <div className={cn("rounded-lg bg-[var(--surface-2)] p-2.5", s.color)}>
+                  <div className={cn("rounded-lg bg-[var(--surface-3)] p-2.5 border border-[var(--surface-border)]", s.color)}>
                     <s.icon className="h-5 w-5" />
                   </div>
                   <div>
@@ -97,7 +109,7 @@ export default async function EmployeeDetailPage({ params }: any) {
                     <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--foreground-muted)]">{s.label}</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
 
@@ -106,7 +118,7 @@ export default async function EmployeeDetailPage({ params }: any) {
              <div className="flex items-center justify-between border-b border-[var(--surface-border)] bg-[var(--surface-2)] p-4">
                 <div className="flex items-center gap-2.5">
                    <TrendingUp className="h-4 w-4 text-[var(--brand-primary)]" />
-                   <h4 className="text-sm font-bold text-[var(--foreground)] tracking-tight">Execution Velocity (7D)</h4>
+                   <h4 className="text-sm font-bold text-[var(--foreground)] tracking-tight">Daily Performance Velocity</h4>
                 </div>
                 <div className="flex items-center gap-2">
                    <span className="badge badge-green text-[9px]">+12% vs last week</span>
@@ -117,18 +129,11 @@ export default async function EmployeeDetailPage({ params }: any) {
              </div>
           </div>
 
-          {/* AI Analysis Component */}
-          <EmployeeAnalysis userId={id} />
+          {/* Attendance History */}
+          <EmployeeAttendanceGrid attendance={attendance} employeeName={profile.name} />
 
-          {/* Recent Logs List */}
-          <div className="dark-card overflow-hidden">
-            <div className="border-b border-[var(--surface-border)] bg-[var(--surface-2)] px-6 py-4">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-[var(--foreground-muted)]">Verification Audit Log</h4>
-            </div>
-            <LogAuditTrail logs={logs} />
-          </div>
 
-          {/* Admin Tools: Danger Zone */}
+
           <PersonnelActions 
             userId={id} 
             userName={profile.name} 
@@ -141,14 +146,14 @@ export default async function EmployeeDetailPage({ params }: any) {
 
         {/* Right Column: Active Assignments */}
         <div className="lg:col-span-4">
-          <div className="dark-card flex h-full flex-col">
-            <div className="border-b border-[var(--surface-border)] px-6 py-5">
+          <div className="dark-card flex h-full flex-col bg-gradient-to-b from-[var(--surface-1)] to-[var(--surface-2)]">
+            <div className="border-b border-[var(--surface-border)] bg-[var(--surface-2)]/50 backdrop-blur-md px-6 py-5">
               <h4 className="flex items-center gap-2 font-bold text-[var(--foreground)]">
                 <Briefcase className="h-4 w-4 text-[var(--brand-primary)]" />
                 Strategic Assignments
               </h4>
             </div>
-            <div className="flex-1 space-y-4 p-6">
+            <div className="flex-1 space-y-4 p-6 overflow-y-auto scrollbar-hide">
               {tasks.length === 0 ? (
                 <div className="py-8 text-center text-xs text-[var(--foreground-muted)]">
                   No tasks assigned to this personnel.
@@ -186,8 +191,7 @@ export default async function EmployeeDetailPage({ params }: any) {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </Container>
   );
 }
-

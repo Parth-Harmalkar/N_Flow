@@ -89,5 +89,25 @@ export async function getEmployeeDetailMetrics(userId: string) {
     .select('*')
     .eq('assigned_to', userId)
 
-  return { logs: logs || [], tasks: tasks || [] }
+  const { data: attendance } = await supabase
+    .from('attendance')
+    .select('*')
+    .eq('user_id', userId)
+    .order('date', { ascending: false })
+    .limit(30)
+
+  const { data: meetings } = await supabase
+    .from('meeting_attendees')
+    .select(`
+      meeting_id,
+      meetings (*)
+    `)
+    .eq('user_id', userId)
+
+  return { 
+    logs: logs || [], 
+    tasks: tasks || [], 
+    attendance: attendance || [], 
+    meetings: meetings?.map(m => m.meetings) || [] 
+  }
 }

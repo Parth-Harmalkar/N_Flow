@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Syne } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const syne = Syne({
@@ -23,6 +24,7 @@ export default function RootLayout({
       <body className={`${syne.variable} font-sans bg-[var(--background)] text-[var(--foreground)]`}>
         <main className="relative min-h-screen">
           {children}
+          <Toaster position="bottom-right" richColors closeButton theme="dark" />
         </main>
       </body>
     </html>
